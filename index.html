@@ -1,0 +1,885 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Bifal</title>
+  <style>
+    :root{
+      --bg1:#0b0b1a;
+      --bg2:#1a0b2e;
+      --bg3:#051b2b;
+      --card: rgba(255,255,255,.08);
+      --card2: rgba(255,255,255,.12);
+      --stroke: rgba(255,255,255,.18);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.65);
+      --pink:#ff4fd8;
+      --violet:#7c4dff;
+      --cyan:#39d0ff;
+      --good:#49ff9a;
+      --warn:#ffd166;
+      --bad:#ff5a6a;
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --radius: 18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
+      overflow:hidden;
+      background:
+        radial-gradient(1200px 700px at 20% 20%, rgba(124,77,255,.35), transparent 55%),
+        radial-gradient(900px 600px at 80% 30%, rgba(255,79,216,.28), transparent 60%),
+        radial-gradient(1100px 700px at 60% 90%, rgba(57,208,255,.22), transparent 60%),
+        linear-gradient(135deg, var(--bg1), var(--bg2) 45%, var(--bg3));
+    }
+    .noise{
+      position:fixed; inset:0;
+      pointer-events:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E");
+      mix-blend-mode:overlay;
+      opacity:.35;
+    }
+    .wrap{
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+    .card{
+      width:min(900px, 96vw);
+      background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+      border:1px solid var(--stroke);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      overflow:hidden;
+      position:relative;
+    }
+    .top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      padding:18px 18px 10px 18px;
+      gap:14px;
+    }
+    .brand{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width: 240px;
+    }
+    .brand h1{
+      margin:0;
+      font-size:22px;
+      letter-spacing:.2px;
+      display:flex; align-items:center; gap:8px;
+    }
+    .pill{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      padding:6px 10px;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.06);
+      border-radius:999px;
+      font-size:12px;
+      color:var(--muted);
+      width:max-content;
+    }
+    .dot{
+      width:8px;height:8px;border-radius:50%;
+      background:linear-gradient(180deg, var(--pink), var(--violet));
+      box-shadow:0 0 20px rgba(255,79,216,.35);
+    }
+    .desc{
+      margin:0;
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.35;
+    }
+    .rightTop{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      align-items:flex-end;
+      min-width: 210px;
+    }
+    .status{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background:rgba(0,0,0,.18);
+      font-size:12px;
+      color:var(--muted);
+      user-select:none;
+    }
+    .spark{
+      width:10px;height:10px;border-radius:50%;
+      background:radial-gradient(circle at 30% 30%, #fff, var(--cyan) 35%, transparent 70%);
+      opacity:.85;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:16px;
+      padding: 0 18px 18px 18px;
+    }
+    @media (max-width: 860px){
+      body{overflow:auto}
+      .grid{grid-template-columns: 1fr}
+      .rightTop{align-items:flex-start}
+    }
+
+    .panel{
+      border:1px solid var(--stroke);
+      border-radius:var(--radius);
+      background:rgba(0,0,0,.16);
+      padding:14px;
+      position:relative;
+      overflow:hidden;
+    }
+    .panel:before{
+      content:"";
+      position:absolute; inset:-2px;
+      background:radial-gradient(500px 240px at 20% 0%, rgba(255,79,216,.18), transparent 60%),
+                 radial-gradient(420px 260px at 80% 10%, rgba(124,77,255,.18), transparent 60%),
+                 radial-gradient(520px 360px at 60% 110%, rgba(57,208,255,.14), transparent 60%);
+      pointer-events:none;
+      filter:saturate(1.2);
+    }
+    .panel > *{position:relative}
+
+    .label{
+      font-size:12px;
+      color:var(--muted);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+      user-select:none;
+    }
+
+    .inputRow{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    input[type="text"]{
+      flex:1 1 280px;
+      border:1px solid rgba(255,255,255,.16);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      border-radius:14px;
+      padding:12px 12px;
+      outline:none;
+      font-size:14px;
+    }
+    input[type="text"]::placeholder{color:rgba(255,255,255,.45)}
+    .mini{
+      display:flex; gap:8px; flex-wrap:wrap;
+      margin-top:10px;
+      color:var(--muted);
+      font-size:12px;
+      user-select:none;
+    }
+    .chip{
+      padding:6px 10px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.05);
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+    }
+    .chip b{color:rgba(255,255,255,.85); font-weight:600}
+    .chip .bar{
+      width:38px; height:6px; border-radius:99px;
+      background:rgba(255,255,255,.12);
+      overflow:hidden;
+      position:relative;
+    }
+    .chip .bar > i{
+      display:block; height:100%; width:55%;
+      background:linear-gradient(90deg, var(--cyan), var(--violet), var(--pink));
+      border-radius:99px;
+      opacity:.9;
+    }
+
+    .actions{
+      display:flex; gap:10px; flex-wrap:wrap;
+      margin-top:12px;
+    }
+    button{
+      border:1px solid rgba(255,255,255,.16);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      padding:12px 14px;
+      border-radius:14px;
+      cursor:pointer;
+      font-size:14px;
+      transition:.18s transform, .18s filter, .18s background, .18s border;
+      user-select:none;
+    }
+    button:hover{transform: translateY(-1px); filter:brightness(1.08)}
+    button:active{transform: translateY(0px) scale(.99)}
+    .primary{
+      flex: 1 1 220px;
+      background:linear-gradient(90deg, rgba(124,77,255,.75), rgba(255,79,216,.75));
+      border:1px solid rgba(255,255,255,.22);
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+    .ghost{
+      flex: 1 1 160px;
+      background:rgba(0,0,0,.18);
+    }
+    .danger{
+      background:rgba(255,90,106,.12);
+      border:1px solid rgba(255,90,106,.35);
+    }
+
+    .stageBox{
+      min-height: 260px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .stageTitle{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:6px;
+      user-select:none;
+    }
+    .stageTitle h2{
+      margin:0;
+      font-size:14px;
+      letter-spacing:.2px;
+      color:rgba(255,255,255,.86);
+    }
+    .meter{
+      display:flex; gap:8px; align-items:center;
+      font-size:12px; color:var(--muted);
+    }
+    .meter .pulse{
+      width:9px;height:9px;border-radius:50%;
+      background:var(--warn);
+      box-shadow:0 0 18px rgba(255,209,102,.35);
+      animation:pulse 1.2s infinite ease-in-out;
+    }
+    @keyframes pulse{
+      0%,100%{transform:scale(1); opacity:.65}
+      50%{transform:scale(1.35); opacity:1}
+    }
+
+    .stage{
+      flex:1;
+      border:1px dashed rgba(255,255,255,.18);
+      border-radius:var(--radius);
+      padding:14px;
+      background:rgba(0,0,0,.14);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .hint{
+      font-size:13px;
+      color:rgba(255,255,255,.70);
+      line-height:1.4;
+      margin:0;
+    }
+
+    .ritual{
+      display:none;
+      height:100%;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      gap:14px;
+      text-align:center;
+      padding:10px;
+    }
+    .orb{
+      width:92px;height:92px;border-radius:50%;
+      background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.9), rgba(57,208,255,.65) 30%, rgba(124,77,255,.55) 55%, rgba(255,79,216,.38) 75%, rgba(0,0,0,0) 76%);
+      filter:saturate(1.1);
+      box-shadow:0 0 50px rgba(124,77,255,.25), 0 0 70px rgba(255,79,216,.18);
+      animation: floaty 2.2s infinite ease-in-out;
+    }
+    @keyframes floaty{
+      0%,100%{transform:translateY(0)}
+      50%{transform:translateY(-10px)}
+    }
+    .progress{
+      width:min(520px, 100%);
+      height:10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.12);
+      overflow:hidden;
+    }
+    .progress > i{
+      display:block;
+      height:100%;
+      width:0%;
+      border-radius:999px;
+      background:linear-gradient(90deg, var(--cyan), var(--violet), var(--pink));
+      transition: width .12s linear;
+    }
+    .sig{
+      font-family:var(--mono);
+      color:rgba(255,255,255,.65);
+      font-size:12px;
+      letter-spacing:.2px;
+    }
+
+    .fortune{
+      display:none;
+      height:100%;
+      gap:10px;
+    }
+    .fortune .big{
+      font-size:18px;
+      line-height:1.35;
+      margin:0;
+      letter-spacing:.2px;
+    }
+    .fortune .small{
+      margin:0;
+      font-size:13px;
+      color:rgba(255,255,255,.72);
+      line-height:1.45;
+    }
+    .quote{
+      margin-top:8px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.05);
+    }
+
+    .foot{
+      padding: 0 18px 16px 18px;
+      color:rgba(255,255,255,.55);
+      font-size:12px;
+      user-select:none;
+    }
+    .kbd{
+      font-family:var(--mono);
+      padding:2px 6px;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(0,0,0,.18);
+    }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:18px;
+      transform:translateX(-50%);
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(0,0,0,.40);
+      color:rgba(255,255,255,.82);
+      font-size:13px;
+      box-shadow: 0 14px 40px rgba(0,0,0,.45);
+      opacity:0;
+      pointer-events:none;
+      transition:.22s opacity, .22s transform;
+    }
+    .toast.show{
+      opacity:1;
+      transform:translateX(-50%) translateY(-4px);
+    }
+  </style>
+</head>
+<body>
+  <div class="noise"></div>
+
+  <div class="wrap">
+    <div class="card" id="card">
+      <div class="top">
+        <div class="brand">
+          <h1>Bifal <span style="font-size:18px;opacity:.9">🔮</span></h1>
+          <div class="pill"><span class="dot"></span> gizem • tek tık • karışık (iyi/kötü/nötr)</div>
+          <p class="desc">Bazen “tesadüf” diye geçiştirirsin… ama bazı günler sanki biri <b>tam buraya</b> itmiş gibi olur. Şimdi niyetini yaz. Sonrası bende.</p>
+        </div>
+
+        <div class="rightTop">
+          <div class="status" id="statusPill"><span class="spark"></span><span id="statusText">Hazır mısın?</span></div>
+          <div class="pill" style="gap:10px">
+            <span>İpucu:</span>
+            <span class="kbd">Cmd</span>+<span class="kbd">S</span> kaydet • <span class="kbd">Cmd</span>+<span class="kbd">R</span> yenile
+          </div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="panel">
+          <div class="label">
+            <span>🎯 Niyet (kısa değil… gerçek olsun)</span>
+            <span style="opacity:.75">Kimse görmez. Burada kalır.</span>
+          </div>
+
+          <div class="inputRow">
+            <input id="intent" type="text" placeholder="Örn: Bugün içimdeki düğümü çözecek bir işaret istiyorum. Net bir cevap istiyorum." maxlength="160" />
+            <button class="ghost danger" id="sealBtn" title="Yeniden mühürle (sıfırla)">Mühürle / Sıfırla</button>
+          </div>
+
+          <div class="mini">
+            <span class="chip">Ton: <b id="chipTone">—</b></span>
+            <span class="chip">Şans: <b id="chipLuck">—</b> <span class="bar"><i id="luckBar"></i></span></span>
+            <span class="chip">İşaret: <b id="chipSign">—</b></span>
+          </div>
+
+          <div class="actions">
+            <button class="primary" id="mainBtn">Ritüeli Başlat</button>
+            <button class="ghost" id="dailyBtn">Günün İşareti (tek)</button>
+            <button class="ghost" id="copyBtn">Paylaş (kopyala)</button>
+          </div>
+        </div>
+
+        <div class="panel stageBox">
+          <div class="stageTitle">
+            <h2>🔒 Fal Kapalı</h2>
+            <div class="meter"><span class="pulse"></span><span id="stageLabel">Aşama 1/3 • Niyet yaz, sonra başlat.</span></div>
+          </div>
+
+          <div class="stage" id="stage">
+            <p class="hint" id="hint">
+              İçinden <b>1 dilek</b> tut. Sonra niyetini yaz. Butona basınca hemen fal açılmayacak —
+              önce “sessizlik”, sonra “işaret”, sonra cümle.
+              <br><br>
+              <span style="opacity:.85">Eğer bugün buraya geldiyysen… bir sebebi olabilir.</span>
+            </p>
+
+            <div class="ritual" id="ritual">
+              <div class="orb"></div>
+              <div class="progress"><i id="prog"></i></div>
+              <div class="sig" id="sig">İz sürülüyor…</div>
+            </div>
+
+            <div class="fortune" id="fortune">
+              <p class="big" id="fortuneBig"></p>
+              <div class="quote">
+                <p class="small" id="fortuneSmall"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="foot">
+        Not: Eğlence amaçlı. Ama bazen bir cümle “tam yerinden” yakalar. Yakarsa… tesadüf deme.
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Kopyalandı.</div>
+
+<script>
+(function(){
+  const el = (id)=>document.getElementById(id);
+
+  const intentEl = el("intent");
+  const mainBtn = el("mainBtn");
+  const dailyBtn = el("dailyBtn");
+  const copyBtn = el("copyBtn");
+  const sealBtn = el("sealBtn");
+
+  const chipTone = el("chipTone");
+  const chipLuck = el("chipLuck");
+  const chipSign = el("chipSign");
+  const luckBar = el("luckBar");
+
+  const statusText = el("statusText");
+  const stageLabel = el("stageLabel");
+  const ritual = el("ritual");
+  const prog = el("prog");
+  const sig = el("sig");
+
+  const hint = el("hint");
+  const fortune = el("fortune");
+  const fortuneBig = el("fortuneBig");
+  const fortuneSmall = el("fortuneSmall");
+
+  const toast = el("toast");
+
+  const SIGS = [
+    "bir numara", "eski bir şarkı", "tesadüfi bir mesaj", "kayıp bir eşya",
+    "kalabalıkta tek bir bakış", "geciken bir haber", "aynı saati sık görme",
+    "yolda karşılaştığın biri", "bir koku", "rüyaya benzeyen bir an",
+    "beklenmedik bir teklif", "küçük bir gecikme", "bir telefon titreşimi",
+    "kendi kendine gelen bir fikir", "aynı kelimeyi iki yerde görme"
+  ];
+
+  // 100+ karışık, samimi, “tesadüf olamaz” hissi veren cümleler
+  const FORTUNES = [
+    "Bugün ‘tesadüf’ dediğin şey, aslında seni doğru yere iten küçük bir el olabilir. Bir işaret görürsen görmezden gelme.",
+    "Aklında biri var ya… onunla ilgili bir gelişme kapıda. İlk adımı sen atmayacaksın; ama sen hazır olacaksın.",
+    "İçinde bitmemiş bir cümle taşıyorsun. Bugün onu tamamlayacak bir konuşma geliyor—kısa ama net.",
+    "Bir şeyin ‘olmadığını’ sanıyorsun; oysa sadece zamanlaması yanlışmış. Zaman bugün düzeliyor.",
+    "Sana ağır gelen yük, başkasının beklentisi. Bugün ilk kez ‘hayır’ demeyi içinden geçireceksin.",
+    "Küçük bir şans, büyük bir kapı aralıyor. Para gibi görünür ama aslında özgürlükle ilgili.",
+    "Biri seni yanlış anlamış. Sessiz kalırsan yanlış kalacak. Bugün tek bir cümleyle düzelt.",
+    "Kalbin hızlı atıyorsa, korkudan değil; doğru yola girdiğindendir. Bugün bunu anlayacaksın.",
+    "Geçmişten biri geri dönebilir. Ama bu kez ‘aynı film’ değil; sen değiştin.",
+    "Bir mesaj bekliyorsun. Gelince ‘bu muymuş’ diyeceksin. Çünkü asıl olan, sende açılacak kapı.",
+    "Bugün gözün bir şeye takılacak: bir kelime, bir tabela, bir şarkı… ve içinden ‘tam ben’ diyeceksin.",
+    "İçinde kıpırdayan o huzursuzluk, yaklaşan bir değişim. Korkma. Değişim seni korumaya geliyor.",
+    "Birine çok verip kendini unutmuşsun. Bugün küçük bir sınır koyarsan, büyük bir rahatlama gelir.",
+    "Sabır dediğin şey bazen ‘vazgeçmemek’ değildir; bazen ‘başka yoldan yürümektir’.",
+    "Bugün bir fırsat kaçıyormuş gibi görünecek. Aslında seni yanlış yoldan çekip alacak.",
+    "Bir süredir ‘neden ben?’ diyorsun. Bugün ‘iyi ki ben’ diyeceğin bir detay var.",
+    "Bir konuşma iki ihtimali ayıracak: ya netlik ya uzaklık. İkisi de sana iyi gelecek, şaşırma.",
+    "Kalbinin istediği şey çok basit: anlaşılmak. Bugün bunu verecek bir insan çıkabilir.",
+    "Aynı döngüyü kırman için küçük bir sinyal geliyor. Sinyal gelince geciktirme.",
+    "İçinden geçen bir dilek var ya—kısa değil, derin. Bugün onun bir parçası gerçek oluyor.",
+    "Uyarı: Bugün kıskançlık enerjisi var. Herkes seni seviyor diye değil; sen parlıyorsun diye.",
+    "Bir ‘tamam’ demen gereken yer var. Bitirmeden yenisi başlamıyor. Bugün kapat.",
+    "Birinden gelen soğukluk seni küçültmesin. Soğukluk onun problemi, senin değer ölçün değil.",
+    "Beklediğin para/iş haberi gecikmiş. Gecikme iptal değil. Sadece ‘daha iyi şart’ demek.",
+    "Bugün aynaya bakıp ‘ben bunu hak etmiyorum’ dersen, evren ‘peki’ der. O cümleyi değiştir.",
+    "Bir yabancı sana küçük bir iyilik yapabilir. Ve günün ruhu bir anda yumuşar.",
+    "Aşk değil sadece… güven istiyorsun. Bugün güvenin küçük bir kanıtı gelecek.",
+    "Birine kırgınsın ama hâlâ merhametlisin. Bu senin zayıflığın değil; kaliten.",
+    "Bugün ‘kader’ gibi görünen bir tesadüf, aslında bir seçimin sonucu olacak.",
+    "Gece yatmadan önce aklındaki kişiyi değil, kendini düşün. Çünkü işaret senin içinden gelecek.",
+    "Bir haber var: ya geri dönüş ya net kapanış. Hangisi olursa olsun ferahlayacaksın.",
+    "Uyarı: Bugün acele karar verme. İlk his doğru, ama ilk hareket erken olabilir.",
+    "Bir konuda içindeki ses ‘git’ diyor. Gitmek illa uzaklaşmak değil; yaklaşmak da olabilir.",
+    "Bugün bir cümle duyacaksın: ‘Ben de aynı şeyi yaşadım.’ İşte orada yalnızlığın biter.",
+    "Bir şey ‘küçük’ diye erteledin. O küçük şey, büyük bir zincirin ilk halkasıymış.",
+    "Bir fotoğraf, bir anı, bir yer… geçmişi tetikleyecek. Ama bu kez seni yıkmayacak; büyütecek.",
+    "Para konusu: Bugün harcama değil, plan günü. Küçük bir düzenleme büyük rahatlık getirir.",
+    "Kalbinin sevdiği şey bazen mantığı kızdırır. Bugün ikisini barıştıran bir işaret var.",
+    "Bir davet, bir teklif, bir ‘hadi’… kabul edersen hayatın rengi değişir.",
+    "Bugün ‘çok şanslıyım’ demek zorunda değilsin. ‘İyileşiyorum’ demen yeter.",
+    "Birinin gözü sende. Ama öyle bakıyor ki: hem hayran hem çekingen.",
+    "Uyarı: Bugün eski bir alışkanlık geri çağıracak. ‘Bir kereden bir şey olmaz’ deme.",
+    "Bir mesajı iki kere yazıp sileceksin. Üçüncüde gönder. Çünkü o netlik lazım.",
+    "Bugün küçük bir mucize: tam ihtiyacın olan anda, tam ihtiyacın olan şey.",
+    "Bir yerde ‘ismine’ benzeyen bir kelime göreceksin. Ciddiye al. Bu senin çağrın.",
+    "Bir konu kapanıyor: uzayan belirsizlik. Bugün ya evet ya hayır.",
+    "İçine çöken yorgunluk, tembellik değil. Ruhun ‘dur’ demesi. Bugün biraz dur.",
+    "Birine yardım edeceksin. Ama asıl iyilik sana dönecek—fark etmeden.",
+    "Bugün kıymetli olan şey: hız değil, doğruluk. Yavaş gidersen yanlış yapmazsın.",
+    "Bir şeyin peşinden koşmayı bırakınca, o şey sana yaklaşır. Bugün bunu yaşarsın.",
+    "Aynı kişiyle aynı tartışma tekrar ediyorsa, konu kişi değil; sınırdır.",
+    "Bugün bir şarkı, içindeki düğümü çözer. Dinle ve ‘tamam’ de.",
+    "Bir telefon konuşması: kısa, net, etkili. Duyduğun şey seni şaşırtacak.",
+    "Uyarı: Bugün kıyas yapma. Senin yolun başka. Senin zamanın da başka.",
+    "Birinin ‘özür’ demesi mümkün. Ama özür yetmez; davranış gelir mi, ona bak.",
+    "Bugün bir şey kaybolabilir… sonra daha iyisi bulunur. Panik değil, dikkat.",
+    "İçinde tuttuğun bir sır var. Bugün onu birine açarsan hafiflersin.",
+    "Bir kapı kapanıyor gibi… ama kapanan kapı zaten seni içeri almıyordu.",
+    "Para/iş tarafında küçük bir sürpriz: beklemediğin bir iade, bir fırsat, bir teklif.",
+    "Bugün ‘ben böyleyim’ deme. ‘Ben değişiyorum’ de. Çünkü gerçekten değişiyorsun.",
+    "Bir bakışma olacak. Ve sen ‘bu tanıdık’ diyeceksin. O tanıdıklık boş değil.",
+    "Uyarı: Bugün ‘seni seviyorum’ diye başlayan bir cümle manipülasyon olabilir. Duy, ama kontrol et.",
+    "Bugün evrenin dili: tekrar eden sayılar, tekrar eden kelimeler, tekrar eden hisler.",
+    "Birinin senden çekindiğini fark edeceksin. Gücün onları ürkütüyor olabilir.",
+    "Bugün güzel bir şey olacak ama küçük başlayacak. Küçümseme.",
+    "Aklındaki planı birine söyle. Söyleyince gerçeklik kazanır.",
+    "Uyarı: Bugün gereksiz tartışmaya girme. Kazansan bile yorulursun.",
+    "Bir konuda ‘haklı’ olmaktan çok ‘mutlu’ olmayı seçeceksin. İşte dönüşüm.",
+    "Bugün kalbinin ‘evet’ dediği yerde, korkun ‘hayır’ diye bağırabilir. Korkuyu dinleme.",
+    "Bir mesajı beklemeyi bırak. Sen kendi gününü kur. Mesaj o zaman gelir.",
+    "Geçmişten biri ‘ben değiştim’ diyebilir. Bu kez söz değil, iz arayacaksın.",
+    "Bugün bir yüzleşme: ya kendinle ya biriyle. Ama sonunda rahatlık var.",
+    "Şansın bugün ‘büyük piyango’ değil; doğru insan, doğru cümle, doğru zaman.",
+    "Birinin sana borcu var: ilgi değil, saygı. Bugün onu talep edeceksin.",
+    "Bugün ‘içimden geldi’ dediğin bir şey yap. O, seni doğru yere taşır.",
+    "Uyarı: Bugün fazla paylaşma. Herkes iyi niyetli değil. Enerjini sakla.",
+    "Bir kahkaha duyacaksın. O kahkaha senin gününü açacak.",
+    "Bugün bir hediye gelebilir: eşya değil; bir fırsat, bir özür, bir açıklık.",
+    "Kafanı kurcalayan soru: ‘Ben yeterli miyim?’ Cevap: evet. Sadece doğru yerde değilsin belki.",
+    "Bugün bir cümle sana çarpacak: ‘Seninle gurur duyuyorum.’ Belki başkasından değil, içinden.",
+    "Uyarı: Bugün eski fotoğraflara fazla dalma. Nostalji tatlıdır ama bataklık olabilir.",
+    "Bir şeyin olmasını çok istiyorsun. Ama ‘nasıl’ kısmını sal. Nasıl kısmı gelir.",
+    "Bugün şansın, bir gecikmenin içinde saklı. Gecikince sinirlenme—gör.",
+    "Biri seni merak ediyor ama gurur yapıyor. Bugün gurur çatlayabilir.",
+    "Bir konuda ‘ben bunu yapamam’ dediğin an, aslında yapmaya en yakın andır.",
+    "Bugün bir seçim yapacaksın: ya rahatın ya büyümen. İkisini de almanın yolu var.",
+    "Uyarı: Bugün birine fazla yükleme. Herkes senin kadar derin taşımıyor.",
+    "Bir işaret: bir kuş, bir renk, bir koku… ve içinden ‘tamam’ diyeceksin.",
+    "Bugün netleşiyor: kim seninle, kim sadece yanında durmuş gibi.",
+    "Bir konuda şansın artıyor: yeni başlangıç. Küçük bir adım at yeter.",
+    "Bugün birinin ‘senin yerinde olsam’ dediğini duyabilirsin. Umursama. Sen sensin.",
+    "Uyarı: Bugün ‘kolay para’ vaatlerine inanma. Kolay olan, pahalıya patlar.",
+    "Bugün birinin sesi sana iyi gelecek. Aramazsan, sen ara. Bazen iyi şeyler senin elinde.",
+    "Bir şeyi çok ciddiye almışsın. Bugün biraz gül. Gülünce düğüm çözülür.",
+    "Bugün küçük bir nazar var. Kendini koru: az konuş, çok yap.",
+    "Bir konuda ‘ben susayım’ demişsin. Ama susmak çözmedi. Bugün konuş.",
+    "Bugün bir fırsat çıkacak: korkarsan kaçırırsın. Korkmana rağmen yap.",
+    "Uyarı: Bugün birine “son kez” deme. Son kezler geri döner. Net ol.",
+    "Bugün birinin gözlerinde ‘pişmanlık’ görebilirsin. Ama sen kendini geri alma.",
+    "Bir şeyin bitmesi, senin kaybetmen değil. Yer açman.",
+    "Bugün bir “işaret” gibi: aynı kelimeyi üç kere görürsen, evet. Bu senin günün.",
+    "Uyarı: Bugün sabahki ruh halin günün tamamı değil. Gün içinde açılırsın.",
+    "Bugün bir plan bozulabilir. Bozulunca daha iyisi yapılır. Direnme, yön değiştir.",
+    "Birine güvenmek istiyorsun ama kanıt arıyorsun. Bugün küçük bir kanıt gelir.",
+    "Bugün bir mesaj: beklediğin kişiden değilse bile, ihtiyacın olan yerden.",
+    "Uyarı: Bugün kendine kötü konuşma. Kendine konuşma şeklin kader gibi çalışır.",
+    "Bugün ‘bu tesadüf olamaz’ hissi gelecek. O hissi küçümseme.",
+    "Bir konuda içindeki çocuk sevinecek. Çünkü sonunda ‘hak ettiğin’ şey gelir.",
+    "Bugün bir şey net: Sen artık eskisi gibi razı olmayacaksın."
+  ];
+
+  // İçerik daha “derin” görünsün diye iki katman: ana cümle + alt yorum
+  const UNDERS = [
+    "Bunu okurken içinden bir isim geçtiyse… işaret tamamdır.",
+    "Bugün gördüğün küçük detay, yarın büyük karar olur.",
+    "Kendini küçültme. Senin enerjin zaten odayı dolduruyor.",
+    "Şunu unutma: Geç gelen şey bazen daha doğru gelendir.",
+    "Kapanmayan kapı senin yüzünden değil; anahtarın oraya ait değil.",
+    "Bugün bir şey değişirse, ilk önce senin içinden değişecek.",
+    "Birine mesaj atma isteği gelirse… önce kendine sor: ‘Ne istiyorum?’",
+    "Kalbinin bildiğini aklın yeni yeni anlıyor.",
+    "Dileğin kısa değil ya… işte o dilek ciddiye alındı.",
+    "Şans; para değil bazen… doğru insanın doğru zamanda çıkmasıdır."
+  ];
+
+  let locked = true;          // fal kapalı
+  let last = null;
+  let lastTone = null;
+  let lastLuck = null;
+  let lastSign = null;
+
+  function rand(arr){
+    return arr[Math.floor(Math.random()*arr.length)];
+  }
+
+  function tonePick(){
+    // karışık: iyi %45, nötr %30, uyarı/kötü %25
+    const r = Math.random();
+    if(r < 0.45) return "iyi";
+    if(r < 0.75) return "nötr";
+    return "uyarı";
+  }
+  function luckFor(t){
+    if(t==="iyi") return 70 + Math.floor(Math.random()*31);      // 70-100
+    if(t==="nötr") return 40 + Math.floor(Math.random()*31);     // 40-70
+    return 15 + Math.floor(Math.random()*36);                    // 15-50
+  }
+  function toneLabel(t){
+    if(t==="iyi") return {txt:"Olumlu ✨", cls:"good"};
+    if(t==="uyarı") return {txt:"Uyarı ⚠️", cls:"warn"};
+    return {txt:"Nötr 🌙", cls:""};
+  }
+
+  function setChips(){
+    const t = tonePick();
+    const l = luckFor(t);
+    const s = rand(SIGS);
+    const tl = toneLabel(t);
+
+    chipTone.textContent = tl.txt;
+    chipLuck.textContent = l;
+    chipSign.textContent = s;
+
+    luckBar.style.width = Math.max(12, Math.min(100, l)) + "%";
+    luckBar.style.display = "block";
+    luckBar.style.opacity = ".95";
+
+    lastTone = tl.txt;
+    lastLuck = l;
+    lastSign = s;
+
+    statusText.textContent = (t==="uyarı") ? "Dikkat… bugün mesaj var." : (t==="nötr" ? "Sessiz ama etkili." : "Bugün ışık var.");
+  }
+
+  function showToast(text){
+    toast.textContent = text;
+    toast.classList.add("show");
+    setTimeout(()=>toast.classList.remove("show"), 1300);
+  }
+
+  function resetAll(){
+    locked = true;
+    hint.style.display = "block";
+    ritual.style.display = "none";
+    fortune.style.display = "none";
+    prog.style.width = "0%";
+    sig.textContent = "İz sürülüyor…";
+    stageLabel.textContent = "Aşama 1/3 • Niyet yaz, sonra başlat.";
+    statusText.textContent = "Hazır mısın?";
+    chipTone.textContent = "—";
+    chipLuck.textContent = "—";
+    chipSign.textContent = "—";
+    luckBar.style.width = "55%";
+    last = null;
+    lastTone = null;
+    lastLuck = null;
+    lastSign = null;
+    intentEl.value = "";
+    intentEl.focus();
+  }
+
+  function ritualFlow(onDone){
+    // 3 aşama: 1) sessizlik 2) işaret 3) cümle
+    hint.style.display = "none";
+    fortune.style.display = "none";
+    ritual.style.display = "flex";
+    prog.style.width = "0%";
+
+    const steps = [
+      {p: 30, text: "Sessizlik… (1 nefes al, 1 nefes ver)"},
+      {p: 70, text: "İşaret geliyor… gözün bir şeye takılacak."},
+      {p: 100, text: "Tamam. Şimdi cümle açılıyor…"}
+    ];
+
+    let i = 0;
+    function next(){
+      const cur = steps[i];
+      sig.textContent = cur.text;
+      let target = cur.p;
+      let current = parseFloat(prog.style.width) || 0;
+
+      const start = performance.now();
+      const dur = 700 + Math.random()*450; // 0.7-1.15s
+      function anim(now){
+        const t = Math.min(1, (now-start)/dur);
+        const v = current + (target-current)*t;
+        prog.style.width = v.toFixed(1) + "%";
+        if(t<1) requestAnimationFrame(anim);
+        else{
+          i++;
+          if(i<steps.length) setTimeout(next, 280);
+          else setTimeout(onDone, 220);
+        }
+      }
+      requestAnimationFrame(anim);
+    }
+    next();
+  }
+
+  function openFortune(mode){
+    // mode: "main" (ritüel), "daily" (tek işaret)
+    setChips();
+
+    // seçimi tekrar etmesin diye basit koruma
+    let msg = rand(FORTUNES);
+    if(last && msg === last){
+      msg = rand(FORTUNES);
+    }
+    last = msg;
+
+    const under = rand(UNDERS);
+
+    ritual.style.display = "none";
+    fortune.style.display = "block";
+    fortuneBig.textContent = msg;
+    fortuneSmall.textContent = under;
+
+    stageLabel.textContent = mode==="daily"
+      ? "Günün İşareti • Tek cümle, tek iz."
+      : "Aşama 3/3 • Cümle açıldı. Şimdi hisset.";
+
+    locked = false;
+  }
+
+  // MAIN: tek tıkla akış
+  mainBtn.addEventListener("click", ()=>{
+    const intent = intentEl.value.trim();
+
+    if(!intent){
+      showToast("Niyet yaz. (Kısa değil… gerçek olsun.)");
+      intentEl.focus();
+      stageLabel.textContent = "Aşama 1/3 • Niyet eksik.";
+      return;
+    }
+
+    // Kilitli değilse yeniden açma; “yeniden mühürle” ile sıfırla
+    if(!locked){
+      showToast("Fal zaten açık. Yenisi için ‘Mühürle/Sıfırla’.");
+      return;
+    }
+
+    stageLabel.textContent = "Aşama 2/3 • Ritüel başladı…";
+    statusText.textContent = "Şşş…";
+    ritualFlow(()=>{
+      openFortune("main");
+      statusText.textContent = "Yakalandın. 🙂";
+    });
+  });
+
+  // Günün işareti: ritüelsiz tek atış
+  dailyBtn.addEventListener("click", ()=>{
+    const intent = intentEl.value.trim();
+    if(!intent){
+      showToast("Önce niyet yaz. Sonra tek işaret al.");
+      intentEl.focus();
+      return;
+    }
+    // Günün işareti “tek” ama yine gizemli
+    stageLabel.textContent = "Günün İşareti hazırlanıyor…";
+    statusText.textContent = "Bir saniye…";
+    ritualFlow(()=>{
+      openFortune("daily");
+      statusText.textContent = "Bu kadarı yeter.";
+    });
+  });
+
+  // Kopyala: niyet + ton/şans/işaret + fal
+  copyBtn.addEventListener("click", async ()=>{
+    const intent = intentEl.value.trim();
+    const msg = fortuneBig.textContent?.trim() || "";
+    if(!intent){
+      showToast("Niyet yazmadan paylaşma olmaz 🙂");
+      return;
+    }
+    if(!msg){
+      showToast("Önce falı aç, sonra kopyala.");
+      return;
+    }
+
+    const text =
+`Bifal 🔮
+Niyet: ${intent}
+
+Ton: ${lastTone || "-"}
+Şans: ${lastLuck ?? "-"}
+İşaret: ${lastSign || "-"}
+
+Fal: ${msg}
+Not: ${fortuneSmall.textContent || ""}`;
+
+    try{
+      await navigator.clipboard.writeText(text);
+      showToast("Kopyalandı ✅ TikTok’a yapıştır.");
+      statusText.textContent = "Kopyalandı ✅";
+      setTimeout(()=>statusText.textContent="Hazır mısın?", 900);
+    }catch(e){
+      // Safari bazen izin ister
+      alert("Kopyalanamadı. Safari izin vermemiş olabilir.\nİpucu: Sayfaya tıkla → tekrar dene.");
+    }
+  });
+
+  // Reset
+  sealBtn.addEventListener("click", ()=>{
+    resetAll();
+    showToast("Mühürlendi. Baştan.");
+  });
+
+  // İlk açılış
+  resetAll();
+})();
+</script>
+</body>
+</html>
